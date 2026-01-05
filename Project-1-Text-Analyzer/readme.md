@@ -53,6 +53,9 @@ The Smart Text Analyzer is a Python-based CLI tool that processes user input to 
 ## 📖 Example Output
 
 Enter text: This was a terrible experience. The service was extremely slow and the staff was very rude. I waited for an hour just to get a cold meal. I am very disappointed and I will never come back to this place again. It was a total waste of money.
+
 Word Count: 48
+
 Sentiment: Negative
+
 Top Keywords: [('terrible', 1), ('experience', 1), ('service', 1)]
