@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Text Analyzer</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&family=Indie+Flower&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --paper: white;
+        --ink: blue;
+        --accent: brown;
+      }
+
+      body {
+        background-color: whitesmoke;
+        background-image: radial-gradient(black 1px, transparent 1px);
+        background-size: 20px 20px;
+        font-family: "Crimson Pro", serif;
+        color: var(--ink);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+      }
+
+      .notebook-page {
+        background: var(--paper);
+        padding: 40px;
+        width: 100%;
+        max-width: 550px;
+        border-radius: 2px;
+        box-shadow: 10px 10px 0px rgba(0, 0, 0, 0.05),
+          0 10px 25px rgba(0, 0, 0, 0.1);
+        position: relative;
+        border: 1px solid pink;
+      }
+
+      h1 {
+        font-family: "Indie Flower", cursive;
+        font-size: 2.5rem;
+        margin-top: 0;
+        text-align: center;
+        color: var(--accent);
+      }
+
+      p.subtitle {
+        text-align: center;
+        font-style: italic;
+        margin-bottom: 30px;
+        opacity: 0.7;
+      }
+
+      textarea {
+        width: 100%;
+        height: 180px;
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid #dcdcdc;
+        font-family: inherit;
+        font-size: 1.2rem;
+        line-height: 1.6;
+        padding: 10px;
+        resize: none;
+        outline: none;
+        box-sizing: border-box;
+      }
+
+      .btn-container {
+        text-align: right;
+        margin-top: 20px;
+      }
+
+      button {
+        background: var(--accent);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        font-family: "Indie Flower", cursive;
+        font-size: 1.4rem;
+        border-radius: 5px;
+      }
+
+      button:hover {
+        background: burlywood;
+        transform: translateY(-2px);
+      }
+
+      button:active {
+        transform: translateY(0);
+      }
+
+      .results-section {
+        margin-top: 40px;
+        display: none;
+        border-top: 2px dashed #ddd;
+        padding-top: 20px;
+      }
+
+      .stat-card {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+      }
+
+      .handwritten {
+        font-family: "Indie Flower", cursive;
+        font-size: 1.3rem;
+        color: lightblue;
+      }
+
+      .loading-text {
+        display: none;
+        font-family: "Indie Flower", cursive;
+        text-align: center;
+        color: var(--accent);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="notebook-page">
+      <h1>Smart Text Analyzer</h1>
+      <p class="subtitle">Drop any text, and I'll analyze it's sentiments</p>
+
+      <textarea
+        id="textInput"
+        placeholder="Eg: This was a terrible experience. The service was extremely slow and the staff was very rude. I waited for an hour just to get a cold meal. I am very disappointed and I will never come back to this place again. It was a total waste of money."
+      ></textarea>
+
+      <div class="btn-container">
+        <button onclick="analyzeText()" id="actionBtn">
+          Analyze Sentiment
+        </button>
+      </div>
+
+      <div id="loading" class="loading-text">Reading through your lines...</div>
+
+      <div id="results" class="results-section">
+        <div class="stat-card">
+          <div>
+            <strong>Word Count</strong><br />
+            <span id="resCount" class="handwritten"></span>
+          </div>
+          <div>
+            <strong>Emotional Tone</strong><br />
+            <span id="resSent" class="handwritten"></span>
+          </div>
+        </div>
+        <div style="margin-top: 20px">
+          <strong>Recurring Themes</strong><br />
+          <span id="resKeys" class="handwritten"></span>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      async function analyzeText() {
+        const textInput = document.getElementById("textInput");
+        const btn = document.getElementById("actionBtn");
+        const loading = document.getElementById("loading");
+        const results = document.getElementById("results");
+
+        if (!textInput.value.trim())
+          return alert("Write something first, friend!");
+
+        // Human touch: UI feedback
+        btn.style.display = "none";
+        loading.style.display = "block";
+        results.style.display = "none";
+
+        try {
+          const response = await fetch("/api/analyze", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: textInput.value }),
+          });
+
+          const data = await response.json();
+
+          // Fill in the notebook
+          document.getElementById("resCount").innerText =
+            data.word_count + " words";
+          document.getElementById("resSent").innerText = data.sentiment;
+          document.getElementById("resKeys").innerText =
+            data.keywords.join(", ");
+
+          loading.style.display = "none";
+          btn.style.display = "inline-block";
+          results.style.display = "block";
+        } catch (err) {
+          alert("Sorry, something went wrong on my end.");
+          btn.style.display = "inline-block";
+          loading.style.display = "none";
+        }
+      }
+    </script>
+  </body>
+</html>
