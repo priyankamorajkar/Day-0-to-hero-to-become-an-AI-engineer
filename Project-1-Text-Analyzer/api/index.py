@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from textblob import TextBlob
 import re
 from collections import Counter
@@ -8,6 +9,9 @@ import os
 
 app = Flask(__name__)
 
+# This line allows your Hostinger website to access this Vercel API
+CORS(app, resources={r"/api/*": {"origins": "https://priyankamorajkar.in"}})
+
 nltk_data_path = os.path.join('/tmp', 'nltk_data')
 if not os.path.exists(nltk_data_path):
     os.makedirs(nltk_data_path)
@@ -15,15 +19,12 @@ nltk.data.path.append(nltk_data_path)
 
 def setup_nltk():
     try:
+        # We check for both stopwords and the punkt tokenizer
         nltk.data.find('corpora/stopwords')
-    except (LookupError, AttributeError):
-        nltk.download('stopwords', download_dir=nltk_data_path, quiet=True)
-    try:
         nltk.data.find('tokenizers/punkt')
     except (LookupError, AttributeError):
+        nltk.download('stopwords', download_dir=nltk_data_path, quiet=True)
         nltk.download('punkt', download_dir=nltk_data_path, quiet=True)
-
-setup_nltk()
 
 class TextAnalyzer:
     def __init__(self, text):
@@ -40,6 +41,7 @@ class TextAnalyzer:
         return "Neutral"
 
     def get_keywords(self):
+        setup_nltk() # Ensure nltk is ready before using stopwords
         cleaned = re.sub(r'[^\w\s]', '', self.text.lower())
         words = cleaned.split()
         stops = set(stopwords.words('english'))
@@ -49,8 +51,6 @@ class TextAnalyzer:
 @app.route('/api/analyze', methods=['POST'])
 def analyze():
     try:
-        setup_nltk()
-        
         data = request.get_json()
         if not data or 'text' not in data:
             return jsonify({"error": "No text provided"}), 400
@@ -63,3 +63,5 @@ def analyze():
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+app.debug = False

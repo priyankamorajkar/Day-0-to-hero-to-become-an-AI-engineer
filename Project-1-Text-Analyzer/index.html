@@ -167,7 +167,6 @@
         if (!textInput.value.trim())
           return alert("Write something first, friend!");
 
-        // Human touch: UI feedback
         btn.style.display = "none";
         loading.style.display = "block";
         results.style.display = "none";
@@ -180,8 +179,6 @@
           });
 
           const data = await response.json();
-
-          // Fill in the notebook
           document.getElementById("resCount").innerText =
             data.word_count + " words";
           document.getElementById("resSent").innerText = data.sentiment;
